@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <h3>${job.title}</h3>
         <p><strong>شهر:</strong> ${job.city?.name || "نامشخص"}</p>
         <p><strong>توضیحات:</strong> ${job.description}</p>
-        <button class="apply-button" onclick="location.href='job.html?id=${job.id}'">
+        <button class="apply-button" onclick="goToChat(${job.id})">
           مشاهده جزئیات
         </button>
       `;
@@ -31,5 +31,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Job load error:", error);
   }
 });
+
+// ✅ تابع هدایت به صفحه چت با ذخیره‌سازی job_id
+function goToChat(jobId) {
+  localStorage.setItem("job_id", jobId);
+  window.location.href = "chat.html";
+}
 
   

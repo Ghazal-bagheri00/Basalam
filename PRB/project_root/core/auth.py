@@ -22,7 +22,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/login")
 # -------------------------------------------------------
 def create_access_token(user: UserDB, expires_delta: timedelta) -> str:
     to_encode = {
-        "sub": user.username,
+        "sub": str(user.id),  # اصلاح شده: شناسه عددی کاربر به صورت رشته
         "username": user.username,
         "is_admin": user.is_admin,
         "is_employer": user.is_employer,
@@ -45,11 +45,11 @@ def get_current_user(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if not username:
+        user_id = payload.get("sub")
+        if not user_id:
             raise credentials_exception
 
-        user = db.query(UserDB).filter(UserDB.username == username).first()
+        user = db.query(UserDB).filter(UserDB.id == int(user_id)).first()
         if not user:
             raise credentials_exception
 

@@ -1,5 +1,3 @@
-# ✅ chat_ws.py - اصلاح دریافت user_id با username
-
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, List, Generator
@@ -12,8 +10,10 @@ from config.config import settings
 
 router = APIRouter()
 
+# لیست اتصال‌های فعال WebSocket برای هر کاربر
 active_connections: Dict[int, List[WebSocket]] = {}
 
+# اتصال به دیتابیس
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -22,31 +22,45 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         db.close()
 
-
+# دریافت شناسه کاربر از توکن (با استفاده از نام کاربری)
 def get_user_id_from_token(token: str, db: Session) -> int:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        username = payload.get("sub")  # ✅ حالا sub همان username است
+        username = payload.get("sub")
         if not username:
-            raise HTTPException(status_code=status.WS_1008_POLICY_VIOLATION, detail="توکن فاقد sub است.")
+            raise HTTPException(
+                status_code=status.WS_1008_POLICY_VIOLATION,
+                detail="توکن فاقد sub (نام کاربری) است."
+            )
 
         user = db.query(models.UserDB).filter(models.UserDB.username == username).first()
         if not user:
-            raise HTTPException(status_code=status.WS_1008_POLICY_VIOLATION, detail="کاربر یافت نشد.")
+            raise HTTPException(
+                status_code=status.WS_1008_POLICY_VIOLATION,
+                detail="کاربر یافت نشد."
+            )
 
         return user.id
     except (JWTError, ValueError):
-        raise HTTPException(status_code=status.WS_1008_POLICY_VIOLATION, detail="توکن نامعتبر است.")
+        raise HTTPException(
+            status_code=status.WS_1008_POLICY_VIOLATION,
+            detail="توکن نامعتبر یا منقضی شده است."
+        )
 
-
+# مسیر WebSocket برای چت بین کاربران
 @router.websocket("/ws/chat/{receiver_id}")
-async def websocket_chat(websocket: WebSocket, receiver_id: int, token: str = Query(...)):
+async def websocket_chat(
+    websocket: WebSocket,
+    receiver_id: int,
+    token: str = Query(...)
+):
     db = SessionLocal()
     try:
         sender_id = get_user_id_from_token(token, db)
         await websocket.accept()
     except HTTPException as e:
         await websocket.close(code=int(e.status_code), reason=e.detail)
+        db.close()
         return
 
     active_connections.setdefault(sender_id, []).append(websocket)
@@ -55,9 +69,12 @@ async def websocket_chat(websocket: WebSocket, receiver_id: int, token: str = Qu
         while True:
             data = await websocket.receive_json()
             content = data.get("content", "").strip()
+
             if not content:
+                await websocket.send_json({"error": "متن پیام نمی‌تواند خالی باشد."})
                 continue
 
+            # ذخیره پیام در دیتابیس
             message = models.Message(
                 sender_id=sender_id,
                 receiver_id=receiver_id,
@@ -68,26 +85,28 @@ async def websocket_chat(websocket: WebSocket, receiver_id: int, token: str = Qu
             db.commit()
             db.refresh(message)
 
-            response_data = {
+            message_data = {
                 "id": message.id,
                 "sender_id": sender_id,
                 "receiver_id": receiver_id,
-                "content": content,
+                "content": message.content,
                 "timestamp": message.timestamp.isoformat()
             }
 
+            # ارسال پیام به گیرنده
             for conn in active_connections.get(receiver_id, []):
                 try:
-                    await conn.send_json(response_data)
+                    await conn.send_json(message_data)
                 except:
-                    pass
+                    continue
 
+            # ارسال پیام به تب‌های دیگر فرستنده
             for conn in active_connections.get(sender_id, []):
                 if conn != websocket:
                     try:
-                        await conn.send_json(response_data)
+                        await conn.send_json(message_data)
                     except:
-                        pass
+                        continue
 
     except WebSocketDisconnect:
         if sender_id in active_connections:

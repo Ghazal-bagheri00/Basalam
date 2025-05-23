@@ -1,149 +1,271 @@
-<!-- ✅ chat.html - بازنویسی برای تطابق با توکن و username -->
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>💬 گفت‌وگو</title>
-  <link rel="stylesheet" href="./css/styles.css" />
+  <title>💬 چت با کارفرما</title>
   <style>
-    /* استایل مشابه قبلی */
+    body {
+      font-family: "Tahoma", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9fb;
+      color: #222;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #6200ea;
+      color: white;
+      padding: 18px 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      user-select: none;
+      box-shadow: 0 2px 5px rgb(98 0 234 / 0.3);
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 16px;
+      gap: 12px;
+      background-color: #fff;
+      box-shadow: 0 0 8px rgb(0 0 0 / 0.1);
+      border-radius: 10px;
+      margin: 12px 24px 24px 24px;
+    }
+    #chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      background-color: #fefefe;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      scroll-behavior: smooth;
+      word-break: break-word;
+    }
+    .chat-message {
+      max-width: 65%;
+      margin: 8px 0;
+      padding: 10px 16px;
+      border-radius: 20px;
+      line-height: 1.4;
+      clear: both;
+      font-size: 15px;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+      user-select: text;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .me {
+      background-color: #d2f4d7;
+      float: right;
+      text-align: right;
+    }
+    .other {
+      background-color: #ececec;
+      float: left;
+      text-align: left;
+    }
+    .chat-input {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #message-input {
+      flex-grow: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1.5px solid #aaa;
+      border-radius: 10px;
+      outline-offset: 2px;
+      transition: border-color 0.25s ease;
+    }
+    #message-input:focus {
+      border-color: #6200ea;
+      box-shadow: 0 0 8px rgba(98, 0, 234, 0.3);
+    }
+    #send-button {
+      background-color: #6200ea;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    #send-button:disabled {
+      background-color: #a390dd;
+      cursor: default;
+    }
+    .system-msg {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin: 10px 0;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
-  <header class="main-header" id="chat-header">💬 گفت‌وگو</header>
 
-  <main class="chat-container">
-    <div id="chat-box" class="chat-box">
-      <p class="system-msg">📨 در حال بارگذاری پیام‌ها...</p>
-    </div>
-    <div class="chat-input-container">
-      <input type="text" id="message-input" placeholder="پیام خود را بنویسید..." autocomplete="off" disabled />
-      <button id="send-button" disabled>ارسال</button>
-    </div>
-  </main>
+<header id="chat-header">💬 چت</header>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const chatBox = document.getElementById("chat-box");
-      const messageInput = document.getElementById("message-input");
-      const sendButton = document.getElementById("send-button");
-      const header = document.getElementById("chat-header");
+<div class="chat-container">
+  <div id="chat-box">
+    <p class="system-msg">در حال بارگذاری پیام‌ها...</p>
+  </div>
+  <div class="chat-input">
+    <input
+      type="text"
+      id="message-input"
+      placeholder="پیام خود را بنویسید..."
+      autocomplete="off"
+      disabled
+      aria-label="متن پیام"
+    />
+    <button id="send-button" disabled>ارسال</button>
+  </div>
+</div>
 
-      const token = localStorage.getItem("access_token");
-      const receiverId = localStorage.getItem("employer_chat_user_id");
-      const receiverName = localStorage.getItem("employer_chat_user_name") || "کاربر";
+<script>
+(() => {
+  const API_BASE = "http://localhost:8000/v1";
+  const token = localStorage.getItem("access_token");
+  const jobId = localStorage.getItem("job_id");
 
-      if (!token || !receiverId) {
-        chatBox.innerHTML = "<p class='system-msg'>❌ لطفاً ابتدا وارد شوید.</p>";
-        return;
-      }
+  const chatBox = document.getElementById("chat-box");
+  const chatHeader = document.getElementById("chat-header");
+  const messageInput = document.getElementById("message-input");
+  const sendButton = document.getElementById("send-button");
 
-      header.innerText = `💬 گفت‌وگو با ${receiverName}`;
+  let currentUserId = null;
+  let receiverId = null;
+  let socket = null;
 
-      function showMessage({ sender_id, content }) {
-        const div = document.createElement("div");
-        div.className = `chat-message ${sender_id === currentUserId ? "me" : "other"}`;
-        div.textContent = content;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }
+  function appendMessage({ sender_id, content }) {
+    const div = document.createElement("div");
+    div.className = "chat-message " + (sender_id === currentUserId ? "me" : "other");
+    div.textContent = content;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-      function showSystemMessage(msg) {
-        const p = document.createElement("p");
-        p.className = "system-msg";
-        p.textContent = msg;
-        chatBox.appendChild(p);
-      }
+  function appendSystemMessage(text) {
+    const p = document.createElement("p");
+    p.className = "system-msg";
+    p.textContent = text;
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-      function enableInput() {
-        messageInput.disabled = false;
-        sendButton.disabled = true;
-        messageInput.focus();
-      }
-
-      function disableInput() {
-        messageInput.disabled = true;
-        sendButton.disabled = true;
-      }
-
-      let currentUserId = null;
-
-      async function getCurrentUserId() {
-        try {
-          const response = await fetch("http://localhost:8000/v1/user/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const user = await response.json();
-          return user.id;
-        } catch {
-          return null;
-        }
-      }
-
-      async function loadMessages() {
-        try {
-          const response = await fetch(`http://localhost:8000/v1/messages/?receiver_id=${receiverId}&token=${token}`);
-          chatBox.innerHTML = "";
-
-          if (!response.ok) {
-            showSystemMessage("❌ خطا در دریافت پیام‌ها.");
-            disableInput();
-            return;
-          }
-
-          const messages = await response.json();
-          messages.forEach(showMessage);
-          enableInput();
-        } catch {
-          showSystemMessage("❌ خطا در بارگیری پیام‌ها.");
-          disableInput();
-        }
-      }
-
-      function connectWebSocket() {
-        const socket = new WebSocket(`ws://localhost:8000/v1/messages/ws/chat/${receiverId}?token=${token}`);
-
-        socket.addEventListener("open", () => {
-          showSystemMessage("✅ اتصال برقرار شد.");
-          enableInput();
-        });
-
-        socket.addEventListener("message", (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            showMessage(message);
-          } catch {}
-        });
-
-        socket.addEventListener("close", () => {
-          showSystemMessage("🔌 اتصال قطع شد.");
-          disableInput();
-        });
-
-        sendButton.addEventListener("click", () => {
-          const content = messageInput.value.trim();
-          if (!content) return;
-          socket.send(JSON.stringify({ content }));
-          showMessage({ sender_id: currentUserId, content });
-          messageInput.value = "";
-          sendButton.disabled = true;
-        });
-
-        messageInput.addEventListener("input", () => {
-          sendButton.disabled = messageInput.value.trim() === "";
-        });
-      }
-
-      getCurrentUserId().then(id => {
-        if (!id) {
-          showSystemMessage("❌ احراز هویت ناموفق.");
-          return;
-        }
-        currentUserId = id;
-        loadMessages().then(connectWebSocket);
-      });
+  async function fetchWithAuth(url) {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-  </script>
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = typeof data.detail === "string" ? data.detail : "خطای ناشناخته";
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  async function initChat() {
+    if (!token || !jobId) {
+      chatBox.innerHTML = "<p class='system-msg'>❌ لطفاً وارد شوید و یک شغل انتخاب کنید.</p>";
+      return;
+    }
+    try {
+      const me = await fetchWithAuth(`${API_BASE}/user/me`);
+      currentUserId = me.id;
+
+      const job = await fetchWithAuth(`${API_BASE}/jobs/${jobId}`);
+      if (!job.employer || !job.employer.id) throw new Error("کارفرما مشخص نشده است.");
+      receiverId = job.employer.id;
+
+      chatHeader.textContent = `💬 چت با ${job.employer.first_name || "کارفرما"}`;
+
+      const messages = await fetchWithAuth(`${API_BASE}/messages/?receiver_id=${receiverId}`);
+      chatBox.innerHTML = "";
+      if (messages.length === 0) {
+        appendSystemMessage("پیامی وجود ندارد. اولین پیام را ارسال کنید!");
+      } else {
+        messages.forEach(appendMessage);
+      }
+
+      setupWebSocket();
+    } catch (err) {
+      console.error(err);
+      chatBox.innerHTML = `<p class='system-msg'>❌ ${err.message}</p>`;
+    }
+  }
+
+  function setupWebSocket() {
+    socket = new WebSocket(`ws://localhost:8000/v1/messages/ws/chat/${receiverId}?token=${token}`);
+
+    socket.addEventListener("open", () => {
+      appendSystemMessage("✅ اتصال برقرار شد.");
+      messageInput.disabled = false;
+      messageInput.focus();
+    });
+
+    socket.addEventListener("message", event => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data && data.sender_id && data.content) {
+          appendMessage(data);
+        }
+      } catch {
+        console.warn("خطا در پردازش پیام دریافتی.");
+      }
+    });
+
+    socket.addEventListener("close", () => {
+      appendSystemMessage("🔌 اتصال قطع شد.");
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+    });
+
+    socket.addEventListener("error", () => {
+      appendSystemMessage("❌ خطا در اتصال وب‌سوکت.");
+    });
+
+    messageInput.addEventListener("input", () => {
+      sendButton.disabled = messageInput.value.trim() === "";
+    });
+
+    sendButton.addEventListener("click", () => {
+      sendMessage();
+    });
+
+    messageInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey && !sendButton.disabled) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+
+  function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content || socket.readyState !== WebSocket.OPEN) return;
+
+    const message = { content };
+    socket.send(JSON.stringify(message));
+    appendMessage({ sender_id: currentUserId, content });
+
+    messageInput.value = "";
+    sendButton.disabled = true;
+    messageInput.focus();
+  }
+
+  initChat();
+})();
+</script>
+
 </body>
 </html>
-
