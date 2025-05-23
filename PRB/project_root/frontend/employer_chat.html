@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>پیام‌های دریافتی کارفرما</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      background-color: #f8f8ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-header {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 1rem;
+      font-size: 1.6rem;
+      text-align: center;
+    }
+
+    .form-container {
+      max-width: 700px;
+      margin: 2rem auto;
+      background-color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    #contacts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .chat-user-item {
+      background: #f3e5f5;
+      border-radius: 12px;
+      padding: 0.8rem 1.2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #4a148c;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .chat-user-item:hover {
+      background-color: #e1bee7;
+    }
+
+    .system-msg {
+      color: #666;
+      text-align: center;
+      font-style: italic;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">📥 پیام‌های دریافتی شما</header>
+
+  <main class="form-container">
+    <div id="contacts-list">
+      <p class="system-msg">در حال بارگذاری لیست مخاطبین...</p>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const contactsList = document.getElementById("contacts-list");
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        contactsList.innerHTML = `<p class="system-msg">❌ لطفاً ابتدا وارد شوید.</p>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:8000/v1/messages/employer/contacts?token=${token}`);
+        if (!res.ok) {
+          contactsList.innerHTML = `<p class="system-msg">❌ خطا در دریافت مخاطبین.</p>`;
+          return;
+        }
+
+        const users = await res.json();
+        if (!users.length) {
+          contactsList.innerHTML = `<p class="system-msg">🟡 هنوز پیامی دریافت نکرده‌اید.</p>`;
+          return;
+        }
+
+        contactsList.innerHTML = "";
+        users.forEach(user => {
+          const div = document.createElement("div");
+          div.className = "chat-user-item";
+          div.textContent = `${user.first_name} ${user.last_name}`;
+          div.addEventListener("click", () => {
+            localStorage.setItem("employer_chat_user_id", user.id);
+            window.location.href = "chat.html";
+          });
+          contactsList.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Fetch error:", err);
+        contactsList.innerHTML = `<p class="system-msg">❌ خطا در ارتباط با سرور.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

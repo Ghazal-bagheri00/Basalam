@@ -1,0 +1,149 @@
+<!-- ✅ chat.html - بازنویسی برای تطابق با توکن و username -->
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>💬 گفت‌وگو</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    /* استایل مشابه قبلی */
+  </style>
+</head>
+<body>
+  <header class="main-header" id="chat-header">💬 گفت‌وگو</header>
+
+  <main class="chat-container">
+    <div id="chat-box" class="chat-box">
+      <p class="system-msg">📨 در حال بارگذاری پیام‌ها...</p>
+    </div>
+    <div class="chat-input-container">
+      <input type="text" id="message-input" placeholder="پیام خود را بنویسید..." autocomplete="off" disabled />
+      <button id="send-button" disabled>ارسال</button>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const chatBox = document.getElementById("chat-box");
+      const messageInput = document.getElementById("message-input");
+      const sendButton = document.getElementById("send-button");
+      const header = document.getElementById("chat-header");
+
+      const token = localStorage.getItem("access_token");
+      const receiverId = localStorage.getItem("employer_chat_user_id");
+      const receiverName = localStorage.getItem("employer_chat_user_name") || "کاربر";
+
+      if (!token || !receiverId) {
+        chatBox.innerHTML = "<p class='system-msg'>❌ لطفاً ابتدا وارد شوید.</p>";
+        return;
+      }
+
+      header.innerText = `💬 گفت‌وگو با ${receiverName}`;
+
+      function showMessage({ sender_id, content }) {
+        const div = document.createElement("div");
+        div.className = `chat-message ${sender_id === currentUserId ? "me" : "other"}`;
+        div.textContent = content;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function showSystemMessage(msg) {
+        const p = document.createElement("p");
+        p.className = "system-msg";
+        p.textContent = msg;
+        chatBox.appendChild(p);
+      }
+
+      function enableInput() {
+        messageInput.disabled = false;
+        sendButton.disabled = true;
+        messageInput.focus();
+      }
+
+      function disableInput() {
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+      }
+
+      let currentUserId = null;
+
+      async function getCurrentUserId() {
+        try {
+          const response = await fetch("http://localhost:8000/v1/user/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const user = await response.json();
+          return user.id;
+        } catch {
+          return null;
+        }
+      }
+
+      async function loadMessages() {
+        try {
+          const response = await fetch(`http://localhost:8000/v1/messages/?receiver_id=${receiverId}&token=${token}`);
+          chatBox.innerHTML = "";
+
+          if (!response.ok) {
+            showSystemMessage("❌ خطا در دریافت پیام‌ها.");
+            disableInput();
+            return;
+          }
+
+          const messages = await response.json();
+          messages.forEach(showMessage);
+          enableInput();
+        } catch {
+          showSystemMessage("❌ خطا در بارگیری پیام‌ها.");
+          disableInput();
+        }
+      }
+
+      function connectWebSocket() {
+        const socket = new WebSocket(`ws://localhost:8000/v1/messages/ws/chat/${receiverId}?token=${token}`);
+
+        socket.addEventListener("open", () => {
+          showSystemMessage("✅ اتصال برقرار شد.");
+          enableInput();
+        });
+
+        socket.addEventListener("message", (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            showMessage(message);
+          } catch {}
+        });
+
+        socket.addEventListener("close", () => {
+          showSystemMessage("🔌 اتصال قطع شد.");
+          disableInput();
+        });
+
+        sendButton.addEventListener("click", () => {
+          const content = messageInput.value.trim();
+          if (!content) return;
+          socket.send(JSON.stringify({ content }));
+          showMessage({ sender_id: currentUserId, content });
+          messageInput.value = "";
+          sendButton.disabled = true;
+        });
+
+        messageInput.addEventListener("input", () => {
+          sendButton.disabled = messageInput.value.trim() === "";
+        });
+      }
+
+      getCurrentUserId().then(id => {
+        if (!id) {
+          showSystemMessage("❌ احراز هویت ناموفق.");
+          return;
+        }
+        currentUserId = id;
+        loadMessages().then(connectWebSocket);
+      });
+    });
+  </script>
+</body>
+</html>
+

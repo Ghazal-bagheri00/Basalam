@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>پنل مدیریت</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .buttons button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin-top: 0;
+    }
+    .actions button {
+      margin: 5px 5px 0 0;
+      padding: 5px 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .edit { background-color: #ffc107; }
+    .delete { background-color: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center">پنل مدیریت</h1>
+
+  <div class="buttons">
+    <button onclick="showData('city')">نمایش شهرها</button>
+    <button onclick="showData('user')">نمایش کاربران</button>
+    <button onclick="showData('job')">نمایش شغل‌ها</button>
+    <button onclick="showData('userjob')">درخواست‌های شغلی</button>
+  </div>
+
+  <div id="data-container" class="container"></div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ورود به WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header class="main-header">ورود به WorkNest</header>
+
+  <main class="form-container">
+    <form id="loginForm" class="auth-form">
+      <h2>ورود</h2>
+
+      <label for="username" class="visually-hidden">شماره تلفن</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="شماره تلفن"
+        required
+        autocomplete="username"
+      />
+
+      <label for="password" class="visually-hidden">رمز عبور</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="رمز عبور"
+        required
+        autocomplete="current-password"
+      />
+
+      <button type="submit">ورود</button>
+
+      <p class="redirect-message">
+        حساب ندارید؟ <a href="register.html">ثبت‌نام کنید</a>
+      </p>
+    </form>
+  </main>
+
+  <script src="./js/login.js"></script>
+</body>
+</html>
