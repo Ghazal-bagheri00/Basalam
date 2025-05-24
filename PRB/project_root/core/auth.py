@@ -8,6 +8,8 @@ from authlib.integrations.starlette_client import OAuth
 from models.models import UserDB
 from database.session import get_db
 from config.config import settings
+# اگر تابع authenticate_user در dependencies.py است، آن را اینجا ایمپورت کنید
+# from dependencies import authenticate_user # اگر از فایل dependencies.py استفاده میکنید، این خط را فعال کنید
 
 # تنظیمات مربوط به JWT
 SECRET_KEY = settings.SECRET_KEY
@@ -15,14 +17,16 @@ ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # تعریف OAuth2 با URL توکن
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/login")
+# نکته: اگر این مسیر در فایل main.py به /v1/auth/token تغییر کرده، اینجا هم باید تغییر کند.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token") # ✅ بهینه شده: مسیر tokenUrl را با توجه به main.py تنظیم کنید.
 
 # -------------------------------------------------------
 # ✅ ایجاد توکن JWT با اطلاعات نقش‌های کاربر
+# این تابع در حال حاضر صحیح است و نیازی به تغییر ندارد.
 # -------------------------------------------------------
 def create_access_token(user: UserDB, expires_delta: timedelta) -> str:
     to_encode = {
-        "sub": str(user.id),  # اصلاح شده: شناسه عددی کاربر به صورت رشته
+        "sub": str(user.id),  # شناسه عددی کاربر به صورت رشته
         "username": user.username,
         "is_admin": user.is_admin,
         "is_employer": user.is_employer,
@@ -32,6 +36,7 @@ def create_access_token(user: UserDB, expires_delta: timedelta) -> str:
 
 # -------------------------------------------------------
 # ✅ استخراج کاربر فعلی از توکن JWT
+# این تابع هم در حال حاضر صحیح است و نیازی به تغییر ندارد.
 # -------------------------------------------------------
 def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -49,7 +54,13 @@ def get_current_user(
         if not user_id:
             raise credentials_exception
 
-        user = db.query(UserDB).filter(UserDB.id == int(user_id)).first()
+        # اطمینان از اینکه user_id به عدد صحیح تبدیل شود
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            raise credentials_exception
+
+        user = db.query(UserDB).filter(UserDB.id == user_id).first()
         if not user:
             raise credentials_exception
 
@@ -59,6 +70,7 @@ def get_current_user(
 
 # -------------------------------------------------------
 # ✅ بررسی نقش ادمین برای دسترسی به بخش‌های مدیریتی
+# این تابع هم در حال حاضر صحیح است و نیازی به تغییر ندارد.
 # -------------------------------------------------------
 def admin_required(current_user: UserDB = Depends(get_current_user)) -> UserDB:
     if not current_user.is_admin:
@@ -70,6 +82,7 @@ def admin_required(current_user: UserDB = Depends(get_current_user)) -> UserDB:
 
 # -------------------------------------------------------
 # ✅ تنظیمات OAuth2 برای ورود با گوگل (مورد استفاده در سوشال لاگین)
+# این بخش هم در حال حاضر صحیح است و نیازی به تغییر ندارد.
 # -------------------------------------------------------
 oauth = OAuth()
 oauth.register(

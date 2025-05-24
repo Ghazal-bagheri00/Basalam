@@ -134,8 +134,6 @@
 <script>
 (() => {
   const API_BASE = "http://localhost:8000/v1";
-  const token = localStorage.getItem("access_token");
-  const jobId = localStorage.getItem("job_id");
 
   const chatBox = document.getElementById("chat-box");
   const chatHeader = document.getElementById("chat-header");
@@ -145,6 +143,9 @@
   let currentUserId = null;
   let receiverId = null;
   let socket = null;
+
+  const token = localStorage.getItem("access_token") || localStorage.getItem("token");
+  const jobId = localStorage.getItem("job_id");
 
   function appendMessage({ sender_id, content }) {
     const div = document.createElement("div");
@@ -162,23 +163,47 @@
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  async function fetchWithAuth(url) {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      const msg = typeof data.detail === "string" ? data.detail : "خطای ناشناخته";
-      throw new Error(msg);
+  async function fetchWithAuth(url, options = {}) {
+  if (!token) throw new Error("توکن موجود نیست");
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    let errorText = await response.text();
+
+    // سعی کنیم خطا رو به عنوان JSON پارس کنیم
+    try {
+      const errJson = JSON.parse(errorText);
+      if (errJson.detail) {
+        throw new Error(typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail));
+      }
+      if (errJson.message) {
+        throw new Error(errJson.message);
+      }
+      throw new Error(JSON.stringify(errJson));
+    } catch {
+      // اگر JSON نبود، متن خطا رو مستقیم برمی‌گردونیم
+      throw new Error(errorText || "خطای ناشناخته");
     }
-    return data;
   }
+
+  return await response.json();
+}
+
 
   async function initChat() {
     if (!token || !jobId) {
       chatBox.innerHTML = "<p class='system-msg'>❌ لطفاً وارد شوید و یک شغل انتخاب کنید.</p>";
       return;
     }
+
     try {
       const me = await fetchWithAuth(`${API_BASE}/user/me`);
       currentUserId = me.id;
@@ -200,7 +225,19 @@
       setupWebSocket();
     } catch (err) {
       console.error(err);
-      chatBox.innerHTML = `<p class='system-msg'>❌ ${err.message}</p>`;
+      let msg;
+      if (typeof err === "string") {
+        msg = err;
+      } else if (err && err.message) {
+        msg = err.message;
+      } else {
+        try {
+          msg = JSON.stringify(err);
+        } catch {
+          msg = "خطای ناشناخته";
+        }
+      }
+      chatBox.innerHTML = `<p class='system-msg'>❌ ${msg}</p>`;
     }
   }
 
@@ -252,7 +289,7 @@
 
   function sendMessage() {
     const content = messageInput.value.trim();
-    if (!content || socket.readyState !== WebSocket.OPEN) return;
+    if (!content || !socket || socket.readyState !== WebSocket.OPEN) return;
 
     const message = { content };
     socket.send(JSON.stringify(message));
@@ -269,3 +306,4 @@
 
 </body>
 </html>
+
