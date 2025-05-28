@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ثبت‌نام در WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header class="main-header">ثبت‌نام در WorkNest</header>
+
+  <main class="form-container">
+    <form id="registerForm" class="auth-form" autocomplete="off">
+      <h2>ایجاد حساب کاربری</h2>
+
+      <div class="form-group">
+        <label for="username">شماره تلفن (نام کاربری):</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="مثلاً 09123456789"
+          required
+          autocomplete="tel"
+          inputmode="tel"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">رمز عبور:</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="رمز عبور حداقل ۸ کاراکتر"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        />
+        <small>باید شامل حروف بزرگ، کوچک و عدد باشد.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="first_name">نام:</label>
+        <input
+          type="text"
+          id="first_name"
+          name="first_name"
+          placeholder="نام"
+          required
+          autocomplete="given-name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="last_name">نام خانوادگی:</label>
+        <input
+          type="text"
+          id="last_name"
+          name="last_name"
+          placeholder="نام خانوادگی"
+          required
+          autocomplete="family-name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="province">استان:</label>
+        <input
+          type="text"
+          id="province"
+          name="province"
+          placeholder="استان محل سکونت"
+          required
+          autocomplete="address-level1"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>نقش کاربری:</label>
+        <div class="role-options">
+          <label>
+            <input type="radio" id="role_user" name="role" value="user" checked />
+            کارجو
+          </label>
+          <label>
+            <input type="radio" id="role_employer" name="role" value="employer" />
+            کارفرما
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">ثبت‌نام</button>
+
+      <p class="redirect-message">
+        حساب دارید؟ <a href="login.html">وارد شوید</a>
+      </p>
+    </form>
+  </main>
+
+  <script src="./js/register.js"></script>
+</body>
+</html>
+
+
+
+

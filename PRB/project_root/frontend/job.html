@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>جزئیات شغل - WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif; /* ✅ فونت تغییر یافت */
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-header {
+      background-color: #673ab7;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.8rem; /* سایز بزرگتر */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .subtitle {
+      text-align: center;
+      margin: 1rem 0;
+      color: #555;
+      font-size: 1.1rem;
+    }
+
+    .job-detail-box {
+      max-width: 700px; /* عریض‌تر شد */
+      margin: 1.5rem auto; /* مارجین بیشتر */
+      background: white;
+      padding: 2rem; /* پدینگ بیشتر */
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1); /* سایه واضح‌تر */
+      line-height: 1.8;
+      color: #333;
+    }
+    .job-detail-box h2 {
+      color: #5d3fd3; /* رنگ بنفش */
+      margin-bottom: 1rem;
+      font-size: 2rem;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    .job-detail-box h3 {
+        color: #7e57c2; /* رنگ بنفش کمی روشن‌تر */
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+    .job-detail-box p {
+      margin: 0.6rem 0; /* فاصله بیشتر بین پاراگراف‌ها */
+      font-size: 1.05rem;
+    }
+    .job-detail-box strong {
+        color: #444;
+    }
+
+    .chat-button, .apply-button { /* دو دکمه متفاوت */
+      margin-top: 25px;
+      padding: 12px 25px;
+      background-color: #7b4dff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 1.1rem;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .chat-button:hover, .apply-button:hover {
+        background-color: #6a3add;
+        transform: translateY(-2px);
+    }
+    .message-info {
+        color: red;
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">جزئیات شغل</header>
+
+  <section class="subtitle">
+    اطلاعات کامل شغل انتخاب‌شده را در زیر مشاهده می‌کنید
+  </section>
+
+  <main>
+    <div id="job-details" class="job-detail-box">
+      <p>در حال بارگذاری اطلاعات شغل...</p>
+    </div>
+  </main>
+
+  <script src="./js/job.js"></script>
+</body>
+</html>

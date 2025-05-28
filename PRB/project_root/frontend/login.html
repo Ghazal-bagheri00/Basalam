@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ورود به WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    /* Add specific styles for login if needed */
+    .social-login {
+        margin-top: 20px;
+        text-align: center;
+    }
+    .google-login-btn {
+        background-color: #db4437; /* Google red */
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: background-color 0.3s;
+    }
+    .google-login-btn:hover {
+        background-color: #c23321;
+    }
+    .google-login-btn img {
+        width: 20px;
+        height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">ورود به WorkNest</header>
+
+  <main class="form-container">
+    <form id="loginForm" class="auth-form">
+      <h2>ورود</h2>
+
+      <div class="form-group">
+        <label for="username" class="visually-hidden">شماره تلفن</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="شماره تلفن (مثلاً 09123456789)"
+          required
+          autocomplete="username"
+          inputmode="tel"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="visually-hidden">رمز عبور</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="رمز عبور"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button type="submit" class="submit-btn">ورود</button>
+
+      <p class="redirect-message">
+        حساب ندارید؟ <a href="register.html">ثبت‌نام کنید</a>
+      </p>
+
+      <div class="social-login">
+        <p>یا با حساب گوگل وارد شوید:</p>
+        <button type="button" class="google-login-btn" id="googleLoginBtn">
+          <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google icon"/>
+          ورود با گوگل
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script src="./js/login.js"></script>
+</body>
+</html>

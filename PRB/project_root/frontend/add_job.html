@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ثبت شغل جدید - WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <header class="main-header">ثبت شغل جدید</header>
+
+  <main class="form-container">
+    <form id="addJobForm" class="auth-form">
+      <h2>افزودن شغل</h2>
+
+      <div class="form-group">
+        <label for="title">عنوان شغل:</label>
+        <input type="text" id="title" name="title" placeholder="مثلاً: توسعه دهنده وب" required />
+      </div>
+
+      <div class="form-group">
+        <label for="description">توضیحات شغل:</label>
+        <textarea id="description" name="description" rows="5" placeholder="شرح کامل وظایف و الزامات..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="city_id">شهر:</label>
+        <select id="city_id" name="city_id" required>
+          <option value="">شهر را انتخاب کنید</option>
+          </select>
+      </div>
+
+      <div class="form-group">
+        <label for="employer_info">اطلاعات تماس کارفرما (اختیاری):</label>
+        <input type="text" id="employer_info" name="employer_info" placeholder="مثلاً ایمیل یا شماره تماس (نمایش عمومی)" />
+      </div>
+
+      <button type="submit" class="submit-btn">ثبت شغل</button>
+    </form>
+    <p class="redirect-message">
+        <a href="employer_dashboard.html">بازگشت به داشبورد</a>
+    </p>
+  </main>
+
+  <script src="./js/add_job.js"></script>
+</body>
+</html>

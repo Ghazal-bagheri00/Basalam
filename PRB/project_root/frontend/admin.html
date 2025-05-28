@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>پنل مدیریت - WorkNest</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap; /* برای ریسپانسیو شدن دکمه‌ها */
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .buttons button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .buttons button:hover {
+      background-color: #0056b3;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex; /* برای چیدمان بهتر محتوا */
+      flex-direction: column;
+      justify-content: space-between; /* دکمه‌ها به پایین چسبیده باشند */
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .card p {
+      margin: 5px 0;
+      font-size: 0.9em;
+    }
+    .actions {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: flex-end; /* دکمه‌ها به سمت چپ */
+    }
+    .actions button {
+      padding: 8px 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9em;
+      transition: opacity 0.2s ease;
+    }
+    .actions button:hover {
+        opacity: 0.8;
+    }
+    .edit { background-color: #ffc107; color: black; }
+    .delete { background-color: #dc3545; color: white; }
+    .approve { background-color: #28a745; color: white; }
+    .status-pending { color: orange; font-weight: bold; }
+    .status-approved { color: green; font-weight: bold; }
+    .system-msg {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center">پنل مدیریت WorkNest</h1>
+
+  <div class="buttons">
+    <button onclick="showData('city')">نمایش شهرها</button>
+    <button onclick="showData('user')">نمایش کاربران</button>
+    <button onclick="showData('job')">شغل‌های تأیید شده</button>
+    <button onclick="showData('pending_jobs')">شغل‌های در انتظار تأیید</button>
+    <button onclick="showData('user_job_applications')">درخواست‌های شغلی</button>
+    <button onclick="logout()">خروج</button>
+  </div>
+
+  <div id="data-container" class="container">
+    <p class="system-msg">اطلاعات برای نمایش انتخاب کنید.</p>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
+

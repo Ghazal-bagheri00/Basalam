@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>پیام‌های دریافتی کارفرما</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      background-color: #f8f8ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main-header {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 1rem;
+      font-size: 1.6rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .form-container {
+      max-width: 700px;
+      margin: 2rem auto;
+      background-color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    #contacts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem; /* افزایش فاصله بین آیتم‌ها */
+    }
+
+    .chat-user-item {
+      background: #f3e5f5;
+      border-radius: 12px;
+      padding: 0.8rem 1.2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #4a148c;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-user-item:hover {
+      background-color: #e1bee7;
+      transform: translateY(-2px);
+    }
+    .system-msg {
+      color: #666;
+      text-align: center;
+      font-style: italic;
+      margin-top: 1rem;
+    }
+    .back-to-dashboard {
+        display: block;
+        text-align: center;
+        margin-top: 2rem;
+        text-decoration: none;
+        color: #5d3fd3;
+        font-weight: bold;
+    }
+    .back-to-dashboard:hover {
+        text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">📥 پیام‌های دریافتی شما</header>
+
+  <main class="form-container">
+    <div id="contacts-list">
+      <p class="system-msg">در حال بارگذاری لیست مخاطبین...</p>
+    </div>
+    <a href="employer_dashboard.html" class="back-to-dashboard">بازگشت به داشبورد</a>
+  </main>
+
+  <script src="./js/employer_chat.js"></script>
+</body>
+</html>
