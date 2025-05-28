@@ -1,55 +1,38 @@
-// frontend/js/admin.js
+// admin.js
 
-const BASE_URL = 'http://localhost:8000/v1'; // آدرس پایه API شما
-const dataContainer = document.getElementById('data-container'); // عنصری که داده‌ها در آن نمایش داده می‌شوند
-const token = localStorage.getItem('access_token'); // توکن احراز هویت کاربر
+const BASE_URL = 'http://localhost:8000/v1';
+const dataContainer = document.getElementById('data-container');
+const token = localStorage.getItem('access_token');
 
-let currentView = 'pending_jobs'; // نمای فعلی (مثلاً 'pending_jobs', 'job', 'user', 'city' و...)
-let allJobsData = []; // متغیری برای نگهداری تمام شغل‌ها که از سرور دریافت می‌شود
+let currentView = 'pending_jobs';
+let allJobsData = [];
 
 // --- توابع کمکی ---
 
-/**
- * نمایش یک پیام سیستمی در بخش نمایش داده‌ها.
- * @param {string} message - متنی که باید نمایش داده شود.
- * @param {boolean} isError - اگر true باشد، پیام با رنگ قرمز نمایش داده می‌شود.
- */
 function showSystemMessage(message, isError = false) {
     dataContainer.innerHTML = `<p class="system-msg" style="color:${isError ? 'red' : '#666'};">${message}</p>`;
 }
 
-/**
- * پس از بارگذاری کامل DOM، این تابع اجرا می‌شود.
- * وضعیت احراز هویت ادمین را بررسی کرده و سپس مشاغل در انتظار تأیید را بارگذاری می‌کند.
- */
 document.addEventListener("DOMContentLoaded", async () => {
-    const user = JSON.parse(localStorage.getItem('user')); // اطلاعات کاربر را از localStorage می‌گیرد
-    if (!token || !user || !user.is_admin) { // بررسی می‌کند که توکن و اطلاعات کاربر موجود باشد و کاربر ادمین باشد
-        alert("❌ فقط مدیران به این صفحه دسترسی دارند. لطفاً وارد حساب ادمین خود شوید."); // هشدار دسترسی
-        window.location.href = "login.html"; // به صفحه ورود هدایت می‌کند
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!token || !user || !user.is_admin) {
+        alert("❌ فقط مدیران به این صفحه دسترسی دارند. لطفاً وارد حساب ادمین خود شوید.");
+        window.location.href = "login.html";
         return;
     }
-    console.log("DOM Loaded. Initializing with pending jobs."); // لاگ کنسول
-    await fetchAllJobsAndRender('pending_jobs'); // تمام مشاغل را دریافت و سپس مشاغل در انتظار را رندر می‌کند
+    console.log("DOM Loaded. Initializing with pending jobs.");
+    await fetchAllJobsAndRender('pending_jobs');
 });
 
-/**
- * کاربر را از سیستم خارج کرده و به صفحه اصلی هدایت می‌کند.
- */
 function logout() {
-    localStorage.removeItem('access_token'); // توکن دسترسی را حذف می‌کند
-    localStorage.removeItem('token_type'); // نوع توکن را حذف می‌کند
-    localStorage.removeItem('user'); // اطلاعات کاربر را حذف می‌کند
-    window.location.href = 'index.html'; // به صفحه اصلی هدایت می‌کند
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('token_type');
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
 }
 
 // --- توابع دریافت و رندر داده‌ها ---
 
-/**
- * تمام مشاغل را از API ادمین دریافت کرده و در allJobsData ذخیره می‌کند.
- * @returns {Promise<Array>} - لیستی از تمام مشاغل.
- * @throws {Error} - در صورت بروز خطا در دریافت داده‌ها.
- */
 async function fetchAllJobs() {
     console.log(`Fetching ALL jobs from admin/jobs/all`);
     const headers = { 'Authorization': `Bearer ${token}` };
@@ -63,18 +46,17 @@ async function fetchAllJobs() {
             throw new Error(`خطا در دریافت تمام شغل‌ها: ${response.status} - ${errorText}`);
         }
         const data = await response.json();
-        console.log(`ALL Jobs data received:`, data); // لاگ داده‌های دریافت شده
-        allJobsData = data; // ذخیره تمام شغل‌ها در متغیر سراسری
-        return data; // بازگرداندن داده‌ها
+        console.log(`ALL Jobs data received:`, data);
+        allJobsData = data;
+        return data;
     } catch (error) {
-        console.error(`Error in fetchAllJobs:`, error); // لاگ خطا
-        throw error; // پرتاب خطا
+        console.error(`Error in fetchAllJobs:`, error);
+        throw error;
     }
 }
 
 /**
  * رندر کردن لیست شهرها در DOM.
- * @param {Array} cities - آرایه‌ای از اشیاء شهرها.
  */
 function renderCities(cities) {
     if (!cities || cities.length === 0) {
@@ -90,7 +72,6 @@ function renderCities(cities) {
 
 /**
  * رندر کردن لیست کاربران در DOM.
- * @param {Array} users - آرایه‌ای از اشیاء کاربران.
  */
 function renderUsers(users) {
     if (!users || users.length === 0) {
@@ -108,15 +89,15 @@ function renderUsers(users) {
 
 /**
  * رندر کردن لیست شغل‌ها در DOM، با قابلیت فیلتر کردن برای نمایش شغل‌های در انتظار یا تأیید شده.
- * @param {boolean} isPendingView - اگر true باشد، فقط مشاغل در انتظار تأیید را نمایش می‌دهد.
+ * @param {boolean} isPendingView - اگر true باشد، فقط شغل‌های در انتظار تأیید را نمایش می‌دهد.
  */
 function renderJobs(isPendingView) {
     let filteredJobs;
     if (isPendingView) {
-        filteredJobs = allJobsData.filter(job => !job.is_approved); // فیلتر کردن مشاغل در انتظار
+        filteredJobs = allJobsData.filter(job => !job.is_approved);
         console.log("Filtered pending jobs (from allJobsData):", filteredJobs);
     } else {
-        filteredJobs = allJobsData.filter(job => job.is_approved); // فیلتر کردن مشاغل تأیید شده
+        filteredJobs = allJobsData.filter(job => job.is_approved);
         console.log("Filtered approved jobs (from allJobsData):", filteredJobs);
     }
 
@@ -125,17 +106,17 @@ function renderJobs(isPendingView) {
     }
     
     dataContainer.innerHTML = filteredJobs.map(job => {
-        const statusText = job.is_approved ? 'تأیید شده' : 'در انتظار تأیید'; // متن وضعیت
-        const statusClass = job.is_approved ? 'status-approved' : 'status-pending'; // کلاس CSS وضعیت
+        const statusText = job.is_approved ? 'تأیید شده' : 'در انتظار تأیید';
+        const statusClass = job.is_approved ? 'status-approved' : 'status-pending';
 
         let actionButtons = '';
         if (isPendingView) {
             actionButtons = `
                 <button class="approve" onclick="updateJobStatus(${job.id}, true)">تأیید</button>
                 <button class="delete" onclick="deleteJob(${job.id}, 'pending_jobs')">حذف</button>
-            `; // دکمه‌های تأیید و حذف برای مشاغل در انتظار
+            `;
         } else {
-            actionButtons = `<button class="delete" onclick="deleteJob(${job.id}, 'job')">حذف</button>`; // دکمه حذف برای مشاغل تأیید شده
+            actionButtons = `<button class="delete" onclick="deleteJob(${job.id}, 'job')">حذف</button>`;
         }
 
         return `
@@ -148,52 +129,57 @@ function renderJobs(isPendingView) {
                 <div class="actions">
                     ${actionButtons}
                 </div>
-            </div>`; // ساخت کارت شغل
+            </div>`;
     }).join('');
     console.log("Jobs rendered based on allJobsData.");
 }
 
-/**
- * لیست درخواست‌های شغلی کاربران را در DOM رندر می‌کند.
- * @param {Array} userJobs - آرایه‌ای از اشیاء درخواست‌های شغلی.
- */
 function renderUserJobApplications(userJobs) {
     if (!userJobs || userJobs.length === 0) {
         return showSystemMessage('هیچ درخواست شغلی یافت نشد.');
     }
-    dataContainer.innerHTML = userJobs.map(req => `
-        <div class="card">
-            <h3>درخواست شغل</h3>
-            <p><strong>شناسه کاربر:</strong> ${req.user_id}</p>
-            <p><strong>شناسه شغل:</strong> ${req.job_id}</p>
-        </div>
-    `).join('');
+    dataContainer.innerHTML = userJobs.map(req => {
+        const userName = req.user ? `${req.user.first_name} ${req.user.last_name}` : 'نامشخص';
+        const jobTitle = req.job ? req.job.title : 'نامشخص';
+        const jobCity = req.job && req.job.city ? req.job.city.name : 'نامشخص';
+        const appliedDate = new Date(req.applied_at).toLocaleDateString('fa-IR');
+        const statusClass = req.status === "Accepted" ? "status-approved" : req.status === "Pending" ? "status-pending" : "status-rejected";
+
+        return `
+            <div class="card">
+                <h3>درخواست شغل برای: ${jobTitle} در ${jobCity}</h3>
+                <p><strong>کارجو:</strong> ${userName} (${req.user?.username || 'نامشخص'})</p>
+                <p><strong>شناسه درخواست:</strong> ${req.id}</p>
+                <p><strong>تاریخ درخواست:</strong> ${appliedDate}</p>
+                <p><strong>وضعیت:</strong> <span class="${statusClass}">${req.status}</span></p>
+            </div>
+        `;
+    }).join('');
     console.log("User job applications rendered.");
 }
 
 /**
  * تابع اصلی برای دریافت و نمایش داده‌ها بر اساس نوع درخواستی.
- * این تابع بسته به نوع، یا از allJobsData استفاده می‌کند یا مستقیماً از API درخواست می‌دهد.
- * @param {string} type - نوع داده‌ای که باید نمایش داده شود ('city', 'user', 'job', 'pending_jobs', 'user_job_applications').
+ * حالا این تابع بسته به نوع، یا از allJobsData استفاده می‌کنه یا مستقیماً از API درخواست می‌ده.
  */
 async function fetchAndRenderData(type) {
-    currentView = type; // به‌روزرسانی نمای فعلی
-    showSystemMessage('⏳ در حال بارگذاری...'); // نمایش پیام بارگذاری
+    currentView = type;
+    showSystemMessage('⏳ در حال بارگذاری...');
     console.log(`Changing view to: ${currentView}`);
     try {
         if (type === 'city') {
-            const data = await fetchDataNonJob(type); // دریافت داده‌های شهر
-            renderCities(data); // رندر کردن شهرها
+            const data = await fetchDataNonJob(type);
+            renderCities(data);
         } else if (type === 'user') {
-            const data = await fetchDataNonJob(type); // دریافت داده‌های کاربر
-            renderUsers(data); // رندر کردن کاربران
+            const data = await fetchDataNonJob(type);
+            renderUsers(data);
         } else if (type === 'job') {
-            renderJobs(false); // رندر مشاغل تأیید شده از allJobsData
+            renderJobs(false);
         } else if (type === 'pending_jobs') {
-            renderJobs(true); // رندر مشاغل در انتظار تأیید از allJobsData
+            renderJobs(true);
         } else if (type === 'user_job_applications') {
-            const data = await fetchDataNonJob(type); // دریافت داده‌های درخواست شغلی
-            renderUserJobApplications(data); // رندر کردن درخواست‌های شغلی
+            const data = await fetchDataNonJob(type);
+            renderUserJobApplications(data);
         }
     } catch (err) {
         console.error("Error during fetchAndRenderData:", err);
@@ -206,12 +192,7 @@ async function fetchAndRenderData(type) {
     }
 }
 
-/**
- * تابع جدید برای دریافت داده‌های غیر شغل (شهرها، کاربران، درخواست‌های شغلی).
- * @param {string} type - نوع داده (مانند 'city', 'user', 'user_job_applications').
- * @returns {Promise<Array>} - آرایه‌ای از داده‌ها.
- * @throws {Error} - در صورت نامعتبر بودن نوع داده یا بروز خطا در API.
- */
+// تابع جدید برای دریافت داده‌های غیر شغل (شهرها، کاربران، درخواست‌های شغلی)
 async function fetchDataNonJob(type) {
     console.log(`Fetching non-job data for type: ${type}`);
     let endpoint = '';
@@ -219,14 +200,14 @@ async function fetchDataNonJob(type) {
 
     switch(type) {
         case 'city':
-            endpoint = 'cities'; // نقطه پایانی برای شهرها
-            requiresAuth = false; // احراز هویت نیاز ندارد
+            endpoint = 'cities';
+            requiresAuth = false;
             break;
         case 'user':
-            endpoint = 'admin/users'; // نقطه پایانی برای کاربران
+            endpoint = 'admin/users';
             break;
         case 'user_job_applications':
-            endpoint = 'admin/user-jobs'; // نقطه پایانی برای درخواست‌های شغلی
+            endpoint = 'admin/user-jobs';
             break;
         default:
             throw new Error('نوع داده نامعتبر برای fetchDataNonJob.');
@@ -252,113 +233,87 @@ async function fetchDataNonJob(type) {
     }
 }
 
-/**
- * تمام مشاغل را از سرور واکشی کرده و سپس نمای فعلی را رندر می‌کند.
- * این تابع برای اطمینان از به‌روز بودن allJobsData قبل از رندر کردن استفاده می‌شود.
- * @param {string} viewToSwitchTo - نمایی که پس از واکشی داده‌ها باید رندر شود.
- */
+
+// تابعی برای فراخوانی اولیه و همچنین رفرش کلی شغل‌ها
 async function fetchAllJobsAndRender(viewToSwitchTo) {
     showSystemMessage('⏳ در حال بارگذاری تمام شغل‌ها...');
     try {
-        await fetchAllJobs(); // تمام مشاغل را از سرور دریافت و در allJobsData ذخیره می‌کند
-        fetchAndRenderData(viewToSwitchTo); // نمای مورد نظر را با داده‌های تازه رندر می‌کند
+        await fetchAllJobs();
+        fetchAndRenderData(viewToSwitchTo);
     } catch (error) {
         showSystemMessage(`❌ خطا در بارگذاری شغل‌ها: ${error.message}`, true);
     }
 }
 
-/**
- * بر اساس نوع داده انتخابی، اقدام به دریافت و نمایش داده‌ها می‌کند.
- * اگر نوع، 'job' یا 'pending_jobs' باشد، ابتدا تمام مشاغل را دوباره واکشی می‌کند.
- * @param {string} type - نوع داده‌ای که باید نمایش داده شود.
- */
+// توابع رویدادهای کلیک برای دکمه‌های بالای صفحه
 function showData(type) {
-    if (type === 'job' || type === 'pending_jobs') { // اگر نمایش مشاغل بود
-        fetchAllJobsAndRender(type); // تمام مشاغل را واکشی و رندر می‌کند
+    if (type === 'job' || type === 'pending_jobs') {
+        fetchAllJobsAndRender(type);
     } else {
-        fetchAndRenderData(type); // داده‌های غیر شغل را مستقیماً دریافت و رندر می‌کند
+        fetchAndRenderData(type);
     }
 }
 
+
 // --- توابع عملیات (تأیید، حذف) ---
 
-/**
- * وضعیت تأیید یک شغل را به‌روزرسانی می‌کند.
- * پس از موفقیت، تمام مشاغل را دوباره از سرور واکشی کرده و نمای مربوطه را رندر می‌کند.
- * @param {number} jobId - شناسه شغل.
- * @param {boolean} isApproved - وضعیت تأیید جدید (true برای تأیید، false برای رد).
- */
 async function updateJobStatus(jobId, isApproved) {
     try {
         console.log(`Attempting to update job ${jobId} to is_approved: ${isApproved}`);
-        const response = await fetch(`${BASE_URL}/admin/jobs/${jobId}`, { // ارسال درخواست PUT
+        const response = await fetch(`${BASE_URL}/admin/jobs/${jobId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ is_approved: isApproved }) // ارسال وضعیت جدید
+            body: JSON.stringify({ is_approved: isApproved })
         });
 
-        if (!response.ok) { // بررسی موفقیت‌آمیز بودن پاسخ
+        if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.detail || `خطا در به‌روزرسانی وضعیت شغل ${jobId}.`);
         }
 
         alert(`✅ شغل ${jobId} با موفقیت ${isApproved ? 'تأیید' : 'رد'} شد!`);
-        console.log(`Job ${jobId} updated successfully. Now re-fetching all jobs to ensure consistency.`);
-        
-        // ⭐️⭐️⭐️⭐️⭐️ تغییر کلیدی: به جای آپدیت محلی، کل مشاغل رو از سرور دوباره بگیر ⭐️⭐️⭐️⭐️⭐️
-        await fetchAllJobsAndRender(isApproved ? 'job' : currentView); // دوباره واکشی و رندر
+        console.log(`Job ${jobId} updated successfully. Now updating local data and refreshing view.`);
+        const updatedJobIndex = allJobsData.findIndex(job => job.id === jobId);
+        if (updatedJobIndex !== -1) {
+            allJobsData[updatedJobIndex].is_approved = isApproved;
+        }
 
+        if (isApproved) {
+            fetchAndRenderData('job');
+        } else {
+            fetchAndRenderData(currentView);
+        }
+        
     } catch (error) {
         console.error("Error updating job status:", error);
         alert("❌ خطا: " + error.message);
     }
 }
 
-/**
- * یک شغل را حذف می‌کند.
- * پس از موفقیت، تمام مشاغل را دوباره از سرور واکشی کرده و نمای مربوطه را رندر می‌کند.
- * @param {number} jobId - شناسه شغل.
- * @param {string} viewToRefresh - نمایی که پس از حذف باید رفرش شود.
- */
 async function deleteJob(jobId, viewToRefresh) {
-    if (!confirm("آیا از حذف این شغل اطمینان دارید؟")) { // درخواست تأیید از کاربر
+    if (!confirm("آیا از حذف این شغل اطمینان دارید؟")) {
         return;
     }
     try {
         console.log(`Attempting to delete job ${jobId}.`);
-        const response = await fetch(`${BASE_URL}/admin/jobs/${jobId}`, { // ارسال درخواست DELETE
+        const response = await fetch(`${BASE_URL}/admin/jobs/${jobId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) { // بررسی موفقیت‌آمیز بودن پاسخ
+        if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.detail || `خطا در حذف شغل ${jobId}.`);
         }
 
         alert(`✅ شغل ${jobId} با موفقیت حذف شد!`);
-        console.log(`Job ${jobId} deleted successfully. Now re-fetching all jobs to ensure consistency.`);
-        
-        // ⭐️⭐️⭐️⭐️⭐️ تغییر کلیدی: به جای آپدیت محلی، کل مشاغل رو از سرور دوباره بگیر ⭐️⭐️⭐️⭐️⭐️
-        async function updateJobStatus(jobId, isApproved) {
-            try {
-                
-                alert(`✅ شغل ${jobId} با موفقیت ${isApproved ? 'تأیید' : 'رد'} شد!`);
-                console.log(`Job ${jobId} updated successfully. Now re-fetching all jobs to ensure consistency.`);
-        
-                // ❗️ اصلاح مهم: همیشه همون نمای فعلی رو حفظ کن
-                await fetchAllJobsAndRender(currentView); 
-        
-            } catch (error) {
-               
-            }
-        }
-        ;
-
+        console.log(`Job ${jobId} deleted successfully. Now updating local data and refreshing view.`);
+        allJobsData = allJobsData.filter(job => job.id !== jobId);
+        fetchAndRenderData(viewToRefresh);
     } catch (error) {
         console.error("Error deleting job:", error);
         alert("❌ خطا: " + error.message);

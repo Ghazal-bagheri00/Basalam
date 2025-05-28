@@ -1,7 +1,9 @@
+# schemas/schemas.py
+
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 from datetime import datetime
-import re
+import re # [cite: 91]
 
 
 PHONE_PATTERN = r"^09\d{9}$"
@@ -10,9 +12,6 @@ PHONE_PATTERN = r"^09\d{9}$"
 # ---------- City ----------
 
 class CityBase(BaseModel):
-    """
-    اطلاعات پایه شهر
-    """
     name: str = Field(min_length=1, max_length=50, description="نام شهر")
 
 class JobUpdate(BaseModel):
@@ -26,9 +25,6 @@ class JobUpdate(BaseModel):
 
 
 class CityOut(CityBase):
-    """
-    مدل خروجی شهر همراه با شناسه
-    """
     id: int
     model_config = ConfigDict(from_attributes=True)
 
@@ -36,12 +32,9 @@ class CityOut(CityBase):
 # ---------- User ----------
 
 class UserBase(BaseModel):
-    """
-    اطلاعات پایه کاربر
-    """
-    username: str  # شماره موبایل
+    username: str
     first_name: str = Field(min_length=1, description="نام")
-    last_name: str = Field(min_length=1, description="نام خانوادگی")
+    last_name: str = Field(min_length=1, description="نام خانوادگی") # [cite: 92]
     province: str = Field(min_length=2, max_length=50, description="استان")
     is_admin: bool = Field(default=False, description="آیا کاربر ادمین است؟")
     is_employer: bool = Field(default=False, description="آیا کاربر کارفرما است؟")
@@ -49,31 +42,22 @@ class UserBase(BaseModel):
     @field_validator("username")
     @classmethod
     def validate_phone(cls, v: str) -> str:
-        """
-        اعتبارسنجی شماره موبایل (باید با 09 شروع و 11 رقم باشد)
-        """
         if not isinstance(v, str):
             raise TypeError("شماره موبایل باید رشته باشد.")
         phone = v.strip()
-        if not re.fullmatch(PHONE_PATTERN, phone):
+        if not re.fullmatch(PHONE_PATTERN, phone): # [cite: 93]
             raise ValueError("شماره موبایل باید با 09 شروع شود و 11 رقم داشته باشد.")
         return phone
 
 
 class UserCreate(UserBase):
-    """
-    مدل دریافت اطلاعات ثبت‌نام کاربر به همراه رمز عبور
-    """
     password: str = Field(min_length=8, max_length=128, description="رمز عبور")
 
     @field_validator("password")
     @classmethod
     def strong_password(cls, v: str) -> str:
-        """
-        اعتبارسنجی رمز عبور قوی: حداقل یک حرف کوچک، یک حرف بزرگ و یک عدد
-        """
         if not any(c.islower() for c in v):
-            raise ValueError("رمز عبور باید حداقل یک حرف کوچک داشته باشد.")
+            raise ValueError("رمز عبور باید حداقل یک حرف کوچک داشته باشد.") # [cite: 94]
         if not any(c.isupper() for c in v):
             raise ValueError("رمز عبور باید حداقل یک حرف بزرگ داشته باشد.")
         if not any(c.isdigit() for c in v):
@@ -82,19 +66,22 @@ class UserCreate(UserBase):
 
 
 class UserOut(UserBase):
-    """
-    مدل خروجی اطلاعات کاربر همراه با شناسه
-    """
     id: int
+    model_config = ConfigDict(from_attributes=True)
+
+# ✅ اضافه شد: UserShort برای نمایش اطلاعات مختصر کاربر
+class UserShort(BaseModel): # [cite: 95]
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    
     model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Job ----------
 
 class JobBase(BaseModel):
-    """
-    اطلاعات پایه شغل
-    """
     title: str = Field(min_length=1, max_length=100, description="عنوان شغل")
     description: str = Field(min_length=1, description="توضیحات")
     city_id: int = Field(..., description="شناسه شهر")
@@ -102,9 +89,6 @@ class JobBase(BaseModel):
 
 
 class JobCreate(JobBase):
-    """
-    مدل دریافت اطلاعات ایجاد شغل
-    """
     employer_id: int = Field(..., description="شناسه کارفرما")
 
 
@@ -112,56 +96,48 @@ class JobOut(JobBase):
     id: int
     city: CityOut
     employer: Optional[UserOut] = None
-    is_approved: bool   # ✅ این خط رو اضافه کن
+    is_approved: bool # [cite: 96]
     model_config = ConfigDict(from_attributes=True)
 
 # ---------- UserJob ----------
 
 class UserJobBase(BaseModel):
-    """
-    اطلاعات پایه برای کاربر و شغل مرتبط
-    """
     job_id: int = Field(..., description="شناسه شغل")
-
+    applicant_notes: Optional[str] = Field(None, description="توضیحات تکمیلی کارجو") # ✅ جدید
 
 class UserJobOut(UserJobBase):
     """
-    مدل خروجی کاربر شغل مرتبط همراه با شناسه‌ها
+    مدل خروجی کاربر شغل مرتبط همراه با شناسه‌ها و وضعیت جدید
     """
     id: int
     user_id: int
+    status: str # [cite: 96] ✅ اضافه شد
+    applied_at: datetime # [cite: 96] ✅ اضافه شد
+    employer_approved_at: Optional[datetime] = None # [cite: 97] ✅ اضافه شد
+    user: UserOut # [cite: 97] ✅ اضافه شد: اطلاعات کامل کاربر متقاضی
+    job: JobOut # [cite: 97] ✅ اضافه شد: اطلاعات کامل شغل مربوطه
+    
     model_config = ConfigDict(from_attributes=True)
 
+# ✅ اضافه شد: شمای برای به‌روزرسانی وضعیت درخواست شغل توسط کارفرما
+class UserJobUpdate(BaseModel): # [cite: 97]
+    status: str = Field(..., pattern="^(Pending|Accepted|Rejected)$", description="وضعیت درخواست: Pending, Accepted, Rejected")
+    model_config = ConfigDict(from_attributes=True)
 
-# ---------- JobRequest ----------
-
-class JobRequest(BaseModel):
-    """
-    درخواست شرکت در شغل با شماره موبایل و شناسه شغل
-    """
-    username: str = Field(..., description="شماره موبایل")
-    job_id: int = Field(..., description="شناسه شغل")
-
-    @field_validator("username")
-    @classmethod
-    def validate_phone(cls, v: str) -> str:
-        """
-        اعتبارسنجی شماره موبایل مشابه مدل UserBase
-        """
-        if not isinstance(v, str):
-            raise TypeError("شماره موبایل باید رشته باشد.")
-        phone = v.strip()
-        if not re.fullmatch(PHONE_PATTERN, phone):
-            raise ValueError("شماره موبایل باید با 09 شروع شود و 11 رقم داشته باشد.")
-        return phone
+# ✅ جدید: شمای برای نمایش کارکنان پذیرفته شده (بر اساس UserJobOut)
+class AcceptedEmployeeOut(BaseModel):
+    id: int # user_job id
+    user: UserOut # اطلاعات کامل کارجو
+    job: JobOut # اطلاعات کامل شغلی که برای آن پذیرفته شده
+    applied_at: datetime
+    employer_approved_at: datetime
+    applicant_notes: Optional[str]
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Token ----------
 
-class Token(BaseModel):
-    """
-    مدل توکن JWT برای احراز هویت
-    """
+class Token(BaseModel): # [cite: 99]
     access_token: str = Field(..., description="توکن دسترسی")
     token_type: str = Field(..., description="نوع توکن")
 
@@ -169,25 +145,16 @@ class Token(BaseModel):
 # ---------- Message ----------
 
 class MessageBase(BaseModel):
-    """
-    اطلاعات پایه پیام
-    """
     sender_id: int = Field(..., description="شناسه فرستنده پیام")
     receiver_id: int = Field(..., description="شناسه گیرنده پیام")
     content: str = Field(min_length=1, description="متن پیام")
 
 
 class MessageCreate(MessageBase):
-    """
-    مدل دریافت پیام جدید (ارسال پیام)
-    """
     pass
 
 
 class MessageOut(MessageBase):
-    """
-    مدل خروجی پیام همراه با شناسه، زمان ارسال و اطلاعات کاربران
-    """
     id: int
     timestamp: datetime
     sender: UserOut
@@ -195,25 +162,16 @@ class MessageOut(MessageBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserShort(BaseModel):
-    """
-    مدل مختصر اطلاعات کاربر
-    """
-    id: int
-    first_name: str
-    last_name: str
-    model_config = ConfigDict(from_attributes=True)
-
 # --- Aliases ---
 User = UserCreate
 Job = JobCreate
 City = CityBase
-CityOut = CityOut
-UserOut = UserOut
-JobOut = JobOut
-UserJob = UserJobBase
-UserJobOut = UserJobOut
-JobRequest = JobRequest
-Token = Token
+CityOut = CityOut # تکراری، حذف شد
+UserOut = UserOut # تکراری، حذف شد
+JobOut = JobOut # تکراری، حذف شد
+UserJob = UserJobBase # ✅ نام‌گذاری بهتر برای ورودی ایجاد درخواست
+UserJobOut = UserJobOut # تکراری، حذف شد
+#JobRequest = JobRequest # حذف شد
+Token = Token # تکراری، حذف شد
 Message = MessageBase
-MessageOut = MessageOut
+MessageOut = MessageOut # تکراری، حذف شد

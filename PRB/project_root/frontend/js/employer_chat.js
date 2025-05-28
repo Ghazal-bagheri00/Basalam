@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     const contactsList = document.getElementById("contacts-list");
     const token = localStorage.getItem("access_token");
     const user = JSON.parse(localStorage.getItem('user'));
@@ -51,4 +51,4 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Fetch error:", err);
       contactsList.innerHTML = `<p class="system-msg">❌ خطا در ارتباط با سرور: ${err.message}</p>`;
     }
-  });
+  });  

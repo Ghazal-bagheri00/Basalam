@@ -20,11 +20,11 @@ class JobDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    description = Column(Text, nullable=False)  # از Text به جای String برای متن طولانی‌تر
+    description = Column(Text, nullable=False)
     city_id = Column(Integer, ForeignKey("cities.id"), nullable=False)
-    employer_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    employer_id = Column(BigInteger, ForeignKey("users.id"), nullable=False) # [cite: 88]
     is_approved = Column(Boolean, default=False, nullable=False)
-    employer_info = Column(String, nullable=True) # ✅ این خط اضافه شد تا 'employer_info' به JobDB اضافه شود
+    employer_info = Column(String, nullable=True)
 
     city = relationship("CityDB", back_populates="jobs")
     employer = relationship("UserDB", back_populates="posted_jobs", foreign_keys=[employer_id])
@@ -41,7 +41,7 @@ class UserDB(Base):
     is_employer = Column(Boolean, default=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    province = Column(String, nullable=False)
+    province = Column(String, nullable=False) # [cite: 89]
 
     jobs = relationship("UserJobDB", back_populates="user")
     posted_jobs = relationship("JobDB", back_populates="employer", foreign_keys=[JobDB.employer_id])
@@ -55,6 +55,10 @@ class UserJobDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
+    status = Column(String, default="Pending", nullable=False) # [cite: 90] ✅ اضافه شد: وضعیت درخواست (Pending, Accepted, Rejected)
+    applied_at = Column(DateTime, default=datetime.utcnow) # [cite: 90] ✅ اضافه شد: زمان ثبت درخواست
+    employer_approved_at = Column(DateTime, nullable=True) # [cite: 90] ✅ اضافه شد: زمان تایید توسط کارفرما
+    applicant_notes = Column(Text, nullable=True) # ✅ جدید: توضیحات ارسالی کارجو
 
     user = relationship("UserDB", back_populates="jobs")
     job = relationship("JobDB", back_populates="user_jobs")

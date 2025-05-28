@@ -64,21 +64,21 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     };
     localStorage.setItem("access_token", token);
     localStorage.setItem("token_type", tokenType);
-    localStorage.setItem("user", JSON.stringify(user)); // Store user object
+    localStorage.setItem("user", JSON.stringify(user));
 
     alert("✅ ورود موفقیت‌آمیز بود!");
 
-    // ✅ منطق جدید: بررسی وجود redirect_job_id
+    // ✅ منطق جدید: اولویت با redirect_job_id
     const redirectJobId = localStorage.getItem("redirect_job_id");
     if (redirectJobId) {
       localStorage.removeItem("redirect_job_id"); // پاک کردن پس از استفاده
-      window.location.href = `job.html?id=${redirectJobId}`; // هدایت به صفحه جزئیات شغل
+      window.location.href = `job.html?id=${redirectJobId}`;
     } else if (user.is_admin === true || user.is_admin === "true") {
       window.location.href = "admin.html";
     } else if (user.is_employer === true || user.is_employer === "true") {
-      window.location.href = "employer_dashboard.html"; // Redirect to employer dashboard
+      window.location.href = "employer_dashboard.html";
     } else {
-      window.location.href = "home.html"; // Redirect to job seeker home
+      window.location.href = "home.html";
     }
 
   } catch (error) {
@@ -95,11 +95,11 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     if (response.ok && data.url) {
       // ✅ اگر کاربر از طریق لینک جزئیات شغل به اینجا رسیده، job_id را برای ریدایرکت پس از گوگل لاگین هم ذخیره کنیم
       const currentUrlParams = new URLSearchParams(window.location.search);
-      const jobIdFromUrl = currentUrlParams.get('job_id'); // اگر job_id در URL هنگام کلیک روی گوگل لاگین بود
+      const jobIdFromUrl = currentUrlParams.get('job_id');
       if (jobIdFromUrl) {
           localStorage.setItem("redirect_job_id", jobIdFromUrl);
       }
-      window.location.href = data.url; // Redirect to Google OAuth Consent Screen
+      window.location.href = data.url;
     } else {
       alert("❌ خطا در شروع ورود با گوگل.");
     }
@@ -108,3 +108,4 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     alert("⚠️ خطا در ارتباط با سرویس گوگل: " + error.message);
   }
 });
+
