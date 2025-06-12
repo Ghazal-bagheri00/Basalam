@@ -71,7 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (myProfileBtn) {
         myProfileBtn.addEventListener("click", () => {
-            alert("پروفایل من (در دست ساخت)");
+            // این خط را حذف یا کامنت کنید:
+            // alert("پروفایل من (در دست ساخت)");
+            window.location.href = "profile.html"; // این خط فعال باقی بماند
         });
     }
     if (myApplicationsBtn) {

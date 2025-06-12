@@ -53,59 +53,7 @@
   </main>
 
   <script src="js/home.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const logoutBtn = document.getElementById("logoutBtn");
-        const myProfileBtn = document.getElementById("myProfileBtn");
-        const myApplicationsBtn = document.getElementById("myApplicationsBtn");
 
-        logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token_type');
-            localStorage.removeItem('user');
-            window.location.href = 'index.html'; // هدایت به صفحه اصلی
-        });
-
-        myProfileBtn.addEventListener("click", () => {
-            // منطق برای نمایش پروفایل کاربر
-            alert("پروفایل من (در دست ساخت)");
-            // window.location.href = "profile.html"; // اگر صفحه پروفایل دارید
-        });
-
-        myApplicationsBtn.addEventListener("click", async () => {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                alert("لطفاً ابتدا وارد شوید.");
-                window.location.href = "login.html";
-                return;
-            }
-            try {
-                const response = await fetch("http://localhost:8000/v1/user/my-jobs", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || "خطا در دریافت درخواست‌های شغلی شما.");
-                }
-                const applications = await response.json();
-                let msg = "درخواست‌های شغلی شما:\n";
-                if (applications.length === 0) {
-                    msg += "شما تا کنون برای هیچ شغلی درخواست نداده‌اید.";
-                } else {
-                    applications.forEach(app => {
-                        msg += `- شغل شماره ${app.job_id}\n`;
-                    });
-                }
-                alert(msg);
-            } catch (error) {
-                alert("❌ خطا در بارگذاری درخواست‌های شغلی: " + error.message);
-                console.error("Error fetching user applications:", error);
-            }
-        });
-    });
-  </script>
 
 </body>
 </html>
